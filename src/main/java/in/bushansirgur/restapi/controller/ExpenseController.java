@@ -1,8 +1,10 @@
 package in.bushansirgur.restapi.controller;
 
 import in.bushansirgur.restapi.dto.ExpenseDTO;
+import in.bushansirgur.restapi.io.ExpenseRequest;
 import in.bushansirgur.restapi.io.ExpenseResponse;
 import in.bushansirgur.restapi.service.ExpenseService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -60,6 +62,11 @@ public class ExpenseController {
 
     }
 
+    /**
+     * It will delete the single expense from database.
+     * @param expenseId
+     * @return void
+     * */
     @ResponseStatus (HttpStatus.NO_CONTENT)
     @DeleteMapping("/expenses/{expenseId}")
     public void deleteExpenseByExpenseId(@PathVariable String expenseId)
@@ -69,8 +76,33 @@ public class ExpenseController {
         expenseService.deleteExpenseByExpenseId(expenseId);
     }
 
+    /**
+     * It will save the expense details to the  database.
+     * @param expenseRequest
+     * @return ExpenseResponse
+     * */
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/expenses")
+    public ExpenseResponse saveExpenseDetails(@Valid @RequestBody ExpenseRequest expenseRequest)
+    {
+         log.info("API POST /expenses called {}",expenseRequest);
+         ExpenseDTO expenseDTO = mapToExpenseDTO(expenseRequest);
+         expenseDTO = expenseService.saveExpenseDetails(expenseDTO);
+         log.info("Printing the expense DTO {}",expenseDTO);
+         return mapToExpenseResponse(expenseDTO);
+         //return expenseRequest;
+    }
 
-/**
+    /**
+     * Mapper method to map expenseRequest to expenseDTO
+     * @param expenseRequest
+     * @return ExpenseDTO
+     * */
+    private ExpenseDTO mapToExpenseDTO(ExpenseRequest expenseRequest) {
+        return modelMapper.map(expenseRequest, ExpenseDTO.class);
+    }
+
+    /**
  * Mapper method for converting Expense DTO object to Expense response object
  * @param expenseDTO
  * @return ExpenseResponse
